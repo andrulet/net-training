@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 
-namespace Task.Generics {
+namespace Task.Generics
+{
 
-	public static class ListConverter {
+	public static class ListConverter
+	{
 
 		private static char ListSeparator = ',';  // Separator used to separate values in string
 
@@ -22,9 +27,20 @@ namespace Task.Generics {
 		///   { ConsoleColor.Black, ConsoleColor.Blue, ConsoleColor.Cyan } => "Black,Blue,Cyan"
 		///   { new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 30) } => "01:00:00,00:00:30",
 		/// </example>
-		public static string ConvertToString<T>(this IEnumerable<T> list) {
-			// TODO : Implement ConvertToString<T>
-			throw new NotImplementedException();
+		public static string ConvertToString<T>(this IEnumerable<T> list)
+		{
+			if (list == null)
+			{
+				throw new ArgumentNullException("list");
+			}
+
+			var result = string.Empty;
+			foreach (var item in list)
+			{
+				result += string.IsNullOrEmpty(result) ? item.ToString() : ListSeparator + item.ToString();
+			}
+
+			return result;
 		}
 
 		/// <summary>
@@ -43,15 +59,28 @@ namespace Task.Generics {
 		///  "Black,Blue,Cyan" for ConsoleColor => { ConsoleColor.Black, ConsoleColor.Blue, ConsoleColor.Cyan }
 		///  "1:00:00,0:00:30" for TimeSpan =>  { new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 30) },
 		///  </example>
-		public static IEnumerable<T> ConvertToList<T>(this string list) {
-			// TODO : Implement ConvertToList<T>
-			// HINT : Use TypeConverter.ConvertFromString method to parse string value
-			throw new NotImplementedException();
+		public static IEnumerable<T> ConvertToList<T>(this string list)
+		{
+			if (string.IsNullOrEmpty(list))
+			{
+				throw new ArgumentNullException("list");
+			}
+
+			var arr = list.Split(ListSeparator);
+			var result = new List<T>();
+			TypeConverter typeConverter = TypeDescriptor.GetConverter(typeof(T));
+			foreach (var item in arr)
+			{
+				result.Add((T)typeConverter.ConvertFromString(item.ToString()));
+			}
+
+			return result;
 		}
 
 	}
 
-	public static class ArrayExtentions {
+	public static class ArrayExtentions
+	{
 
 		/// <summary>
 		///   Swaps the one element of source array with another
@@ -60,9 +89,21 @@ namespace Task.Generics {
 		/// <param name="array">source array</param>
 		/// <param name="index1">first index</param>
 		/// <param name="index2">second index</param>
-		public static void SwapArrayElements<T>(this T[] array, int index1, int index2) {
-			// TODO : Implement SwapArrayElements<T>
-			throw new NotImplementedException();
+		public static void SwapArrayElements<T>(this T[] array, int index1, int index2)
+		{
+			if (array.Length < 1)
+			{
+				throw new ArgumentNullException("array");
+			}
+
+			if (index1 < 0 || index2 < 0 || index1 > array.Length - 1 || index2 > array.Length - 1)
+			{
+				throw new IndexOutOfRangeException("array");
+			}
+
+			T element = array[index1];
+			array[index1] = array[index2];
+			array[index2] = element;
 		}
 
 		/// <summary>
@@ -91,9 +132,22 @@ namespace Task.Generics {
 		///     { 1, "a", false },
 		///   }
 		/// </example>
-		public static void SortTupleArray<T1, T2, T3>(this Tuple<T1, T2, T3>[] array, int sortedColumn, bool ascending) {
-			// TODO :SortTupleArray<T1, T2, T3>
-			// HINT : Add required constraints to generic types
+		public static void SortTupleArray<T1, T2, T3>(this Tuple<T1, T2, T3>[] array, int sortedColumn, bool ascending)
+			where T1 : struct
+			where T2 : struct
+			where T3 : struct
+		{
+			if (array.Length < sortedColumn)
+			{
+				throw new IndexOutOfRangeException("array");
+			}
+
+			var arr = new Tuple<T1, T2, T3>[array.Length];
+
+			if (sortedColumn == 0) arr = ascending == true ? array.OrderBy(x => x.Item1).ToArray<Tuple<T1, T2, T3>>() : array.OrderByDescending(x => x.Item1).ToArray<Tuple<T1, T2, T3>>();
+			if (sortedColumn == 1) arr = ascending == true ? array.OrderBy(x => x.Item2).ToArray<Tuple<T1, T2, T3>>() : array.OrderByDescending(x => x.Item2).ToArray<Tuple<T1, T2, T3>>();
+			if (sortedColumn == 2) arr = ascending == true ? array.OrderBy(x => x.Item3).ToArray<Tuple<T1, T2, T3>>() : array.OrderByDescending(x => x.Item3).ToArray<Tuple<T1, T2, T3>>();
+			arr.CopyTo(array, 0);
 		}
 
 	}
@@ -105,17 +159,34 @@ namespace Task.Generics {
 	///   This code should return the same MyService object every time:
 	///   MyService singleton = Singleton<MyService>.Instance;
 	/// </example>
-	public static class Singleton<T> {
-		// TODO : Implement generic singleton class 
+	public static class Singleton<T> where T : new()
+	{
+		private static T instance;
+		private static object block = new Object();
+		public static T Instance
+		{
+			get
+			{
+				if (instance == null)
+				{
+					lock (block)
+					{
+						if (instance == null)
+						{
+							instance = new T();
+						}
+					}
+				}
 
-		public static T Instance {
-			get { throw new NotImplementedException(); }
+				return instance;
+			}
 		}
 	}
 
 
 
-	public static class FunctionExtentions {
+	public static class FunctionExtentions
+	{
 		/// <summary>
 		///   Tries to invoke the specified function up to 3 times if the result is unavailable 
 		/// </summary>
@@ -134,9 +205,31 @@ namespace Task.Generics {
 		///   The second attemp has the same workflow.
 		///   If the third attemp fails then this exception should be rethrow to the application.
 		/// </example>
-		public static T TimeoutSafeInvoke<T>(this Func<T> function) {
-			// TODO : Implement TimeoutSafeInvoke<T>
-			throw new NotImplementedException();
+		public static T TimeoutSafeInvoke<T>(this Func<T> function)
+		{
+			try
+			{
+				try
+				{
+					try
+					{
+						return function.Invoke();
+					}
+					catch (Exception)
+					{
+					}
+					return function.Invoke();
+				}
+				catch (Exception ex)
+				{
+					Trace.WriteLine(ex.ToString());
+				}
+				return function.Invoke();
+			}
+			catch (System.Net.WebException ex)
+			{
+				throw ex;
+			}
 		}
 
 
@@ -163,12 +256,29 @@ namespace Task.Generics {
 		///            x=> x<10
 		///       })
 		/// </example>
-		public static Predicate<T> CombinePredicates<T>(Predicate<T>[] predicates) {
-			// TODO : Implement CombinePredicates<T>
-			throw new NotImplementedException();
+		public static Predicate<T> CombinePredicates<T>(Predicate<T>[] predicates)
+		{
+			if (predicates == null)
+			{
+				throw new ArgumentNullException();
+			}
+
+			if (predicates.Length == 0)
+			{
+				throw new ArgumentOutOfRangeException();
+			}
+
+			return delegate (T item)
+			{
+				foreach (Predicate<T> predicate in predicates)
+				{
+					if (!predicate(item))
+					{
+						return false;
+					}
+				}
+				return true;
+			};
 		}
-
 	}
-
-
 }
