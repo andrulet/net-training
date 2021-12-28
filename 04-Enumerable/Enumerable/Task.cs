@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace EnumerableTask {
 
@@ -20,9 +21,23 @@ namespace EnumerableTask {
         ///    { "A", "B", "C" } => { "A", "B", "C" }
         ///    { "a", "A", "", null } => { "A", "A", "", null }
         /// </example>
-        public IEnumerable<string> GetUppercaseStrings(IEnumerable<string> data) {
-            // TODO : Implement GetUppercaseStrings
-            throw new NotImplementedException();
+        public IEnumerable<string> GetUppercaseStrings(IEnumerable<string> data)
+        {
+            foreach (var item in data)
+            {
+                if (item is null)
+                {
+                    yield return null;
+                }
+                else if (string.Empty == item)
+                {
+                    yield return item;
+                }
+                else
+                {
+                    yield return item.ToUpper(CultureInfo.InvariantCulture);
+                }
+            }
         }
 
         /// <summary> Transforms an each string from sequence to its length</summary>
@@ -35,9 +50,12 @@ namespace EnumerableTask {
         ///   {"a","aa","aaa" } => { 1, 2, 3 }
         ///   {"aa","bb","cc", "", "  ", null } => { 2, 2, 2, 0, 2, 0 }
         /// </example>
-        public IEnumerable<int> GetStringsLength(IEnumerable<string> data) {
-            // TODO : Implement GetStringsLength
-            throw new NotImplementedException();
+        public IEnumerable<int> GetStringsLength(IEnumerable<string> data)
+        {
+            foreach (var item in data)
+            {
+                yield return string.IsNullOrEmpty(item) ? 0 : item.Length;
+            }
         }
 
         /// <summary>Transforms int sequence to its square sequence, f(x) = x * x </summary>
@@ -50,9 +68,12 @@ namespace EnumerableTask {
         ///   { 1, 2, 3, 4, 5 } => { 1, 4, 9, 16, 25 }
         ///   { -1, -2, -3, -4, -5 } => { 1, 4, 9, 16, 25 }
         /// </example>
-        public IEnumerable<long> GetSquareSequence(IEnumerable<int> data) {
-            // TODO : Implement GetSquareSequence
-            throw new NotImplementedException();
+        public IEnumerable<long> GetSquareSequence(IEnumerable<int> data)
+        {
+            foreach (var item in data)
+            {
+                yield return (long)item * (long)item;
+            }
         }
 
         /// <summary>Transforms int sequence to its moving sum sequence, 
@@ -70,9 +91,10 @@ namespace EnumerableTask {
         ///   { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 } => { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55 }
         ///   { 1, -1, 1, -1, -1 } => { 1, 0, 1, 0, 1 }
         /// </example>
-        public IEnumerable<long> GetMovingSumSequence(IEnumerable<int> data) {
-            // TODO : Implement GetMovingSumSequence
-            throw new NotImplementedException();
+        public IEnumerable<long> GetMovingSumSequence(IEnumerable<int> data)
+        {
+            long sum = 0;
+            return data.Select(x => sum += x);
         }
 
 
@@ -91,9 +113,23 @@ namespace EnumerableTask {
         ///  { "a","b","c", null }, prefix=""   => { "a","b","c" }
         ///  { "a","b","c" }, prefix=null => exception
         /// </example>
-        public IEnumerable<string> GetPrefixItems(IEnumerable<string> data, string prefix) {
-            // TODO : Implement GetPrefixItems
-            throw new NotImplementedException();
+        public IEnumerable<string> GetPrefixItems(IEnumerable<string> data, string prefix)
+        {
+            if (prefix == null)
+            {
+                throw new ArgumentNullException("prefix");
+            }
+
+            foreach (var item in data)
+            {
+                if (item == null)
+                {
+                }
+                else if (item.StartsWith(prefix.ToLowerInvariant()))
+                {
+                    yield return item;
+                }
+            }
         }
 
         /// <summary> Returns every second item from source sequence</summary>
@@ -105,9 +141,9 @@ namespace EnumerableTask {
         ///  { "a","b","c" , null } => { "b", null }
         ///  { "a" } => { }
         /// </example>
-        public IEnumerable<T> GetEvenItems<T>(IEnumerable<T> data) {
-            // TODO : Implement GetEvenItems
-            throw new NotImplementedException();
+        public IEnumerable<T> GetEvenItems<T>(IEnumerable<T> data)
+        {
+            return data.Where((x, index) => index % 2 == 1);
         }
 
         /// <summary> Propagate every item in sequence its position times</summary>
@@ -123,9 +159,21 @@ namespace EnumerableTask {
         ///   { "a", "b", "c", null } => { "a", "b","b", "c","c","c", null,null,null,null }
         ///   { 1,2,3,4,5} => { 1, 2,2, 3,3,3, 4,4,4,4, 5,5,5,5,5 }
         /// </example>
-        public IEnumerable<T> PropagateItemsByPositionIndex<T>(IEnumerable<T> data) {
-            // TODO : Implement PropagateItemsByPositionIndex
-            throw new NotImplementedException();
+        public IEnumerable<T> PropagateItemsByPositionIndex<T>(IEnumerable<T> data)
+        {
+            int i = 0;
+            int j = 1;
+            foreach (var item in data)
+            {
+                do
+                {
+                    yield return item;
+                    i++;
+                }
+                while (i != j);
+                i = 0;
+                j++;
+            }
         }
 
         /// <summary>Finds all used char in string sequence</summary>
@@ -140,9 +188,15 @@ namespace EnumerableTask {
         ///   { "", null } => { }
         ///   { } => { }
         /// </example>
-        public IEnumerable<char> GetUsedChars(IEnumerable<string> data) {
-            // TODO : Implement GetUsedChars
-            throw new NotImplementedException();
+        public IEnumerable<char> GetUsedChars(IEnumerable<string> data)
+        {
+            var result = "";
+            foreach (var item in data)
+            {
+                result += item;
+            }
+
+            return result.Distinct();
         }
 
 
@@ -158,9 +212,19 @@ namespace EnumerableTask {
         ///   { "a", "b", "c", null, ""} => "a,b,c,null,"
         ///   { "", "" } => ","
         /// </example>
-        public string GetStringOfSequence<T>(IEnumerable<T> data) {
-            // TODO : Implement GetStringOfSequence
-            throw new NotImplementedException();
+        public string GetStringOfSequence<T>(IEnumerable<T> data)
+        {
+            if (data == null)
+            {
+                return String.Empty;
+            }
+            var result = "";
+            foreach (var item in data)
+            {
+                result += item == null ? "," + "null" : "," + item.ToString();
+            }
+
+            return string.IsNullOrEmpty(result) ? string.Empty : result.Remove(0, 1);
         }
 
         /// <summary> Finds the 3 largest numbers from a sequence</summary>
@@ -175,9 +239,9 @@ namespace EnumerableTask {
         ///   { 1,2,3,4,5,6,7,8,9,10 } => { 10, 9, 8 }
         ///   { 10, 10, 10, 10 } => { 10, 10, 10 }
         /// </example>
-        public IEnumerable<int> Get3TopItems(IEnumerable<int> data) {
-            // TODO : Implement Get3TopItems
-            throw new NotImplementedException();
+        public IEnumerable<int> Get3TopItems(IEnumerable<int> data)
+        {
+            return data.OrderByDescending(x => x).Take(3);
         }
 
         /// <summary> Calculates the count of numbers that are greater then 10</summary>
@@ -191,9 +255,9 @@ namespace EnumerableTask {
         ///   { 1, 2, 3, 11 } => 1
         ///   { 1, 20, 30, 40 } => 3
         /// </example>
-        public int GetCountOfGreaterThen10(IEnumerable<int> data) {
-            // TODO : Implement GetCountOfGreaterThen10
-            throw new NotImplementedException();
+        public int GetCountOfGreaterThen10(IEnumerable<int> data)
+        {
+            return data.Count(x => x > 10);
         }
 
 
@@ -207,9 +271,17 @@ namespace EnumerableTask {
         ///   { "a", "IT IS FIRST", "first item", "I am really first!" } => "IT IS FIRST"
         ///   { } => null
         /// </example>
-        public string GetFirstContainsFirst(IEnumerable<string> data) {
-            // TODO : Implement GetFirstContainsFirst
-            throw new NotImplementedException();
+        public string GetFirstContainsFirst(IEnumerable<string> data)
+        {
+            foreach (var item in data)
+            {
+                if (item != null && item.ToLower().Contains("first"))
+                {
+                    return item;
+                }
+            }
+
+            return null;
         }
 
         /// <summary> Counts the number of unique strings with length=3 </summary>
@@ -223,9 +295,13 @@ namespace EnumerableTask {
         ///   { "aaa", "aaa", "aaa", "bbb" } => 2   ("aaa", "bbb") 
         ///   { } => 0
         /// </example>
-        public int GetCountOfStringsWithLengthEqualsTo3(IEnumerable<string> data) {
-            // TODO : Implement GetCountOfStringsWithLengthEqualsTo3
-            throw new NotImplementedException();
+        public int GetCountOfStringsWithLengthEqualsTo3(IEnumerable<string> data)
+        {
+            var z = from i in data
+                    where i != null && i.Length == 3
+                    select i;
+
+            return z.Distinct().Count();
         }
 
         /// <summary> Counts the number of each strings in sequence </summary>
@@ -234,14 +310,20 @@ namespace EnumerableTask {
         ///   Returns the list of strings and number of occurence for each string.
         /// </returns>
         /// <example>
-        ///   { "a", "b", "a", "aa", "b"} => { ("a",2), ("b",2), ("aa",1) }    
+        ///   { "a", "b", "a", "aa", "b"} => { ("a",2), ("b",2), ("aa",1) }
         ///   { "a", "a", null, "", "ccc", "" } => { ("a",2), (null,1), ("",2), ("ccc",1) }
         ///   { "aaa", "aaa", "aaa" } =>  { ("aaa", 3) } 
         ///   { } => { }
         /// </example>
-        public IEnumerable<Tuple<string,int>> GetCountOfStrings(IEnumerable<string> data) {
-            // TODO : Implement GetCountOfStrings
-            throw new NotImplementedException();
+        public IEnumerable<Tuple<string, int>> GetCountOfStrings(IEnumerable<string> data)
+        {
+            var list = data.ToList();
+            while (list.Count > 0)
+            {
+                var result = new Tuple<string, int>(list.First(), data.Where(x => list.First() == x).Count());
+                yield return result;
+                list.RemoveAll(x => x == result.Item1);
+            }
         }
 
         /// <summary> Counts the number of strings with max length in sequence </summary>
@@ -256,9 +338,9 @@ namespace EnumerableTask {
         ///   { "", null, "", null } => 4
         ///   { } => { }
         /// </example>
-        public int GetCountOfStringsWithMaxLength(IEnumerable<string> data) {
-            // TODO : Implement GetCountOfStringsWithMaxLength
-            throw new NotImplementedException();
+        public int GetCountOfStringsWithMaxLength(IEnumerable<string> data)
+        {
+            return data.Where(i => (i == null ? 0 : i.Length) == data.Max().Length).Count();
         }
 
 
@@ -276,22 +358,22 @@ namespace EnumerableTask {
         ///    "" => 0
         ///    null => exception
         /// </example>
-        public int GetDigitCharsCount(string data) {
-            // TODO : Implement GetDigitCharsCount
-            throw new NotImplementedException();
+        public int GetDigitCharsCount(string data)
+        {
+            return data.Where(x => char.IsDigit(x)).Count();
         }
 
 
-       
+
         /// <summary>Counts the system log events of required type</summary>
         /// <param name="value">the type of log event (Error, Event, Information etc)</param>
         /// <returns>
         ///   Returns the number of System log entries of specified type
         /// </returns>
-        public int GetSpecificEventEntriesCount(EventLogEntryType value) {
-            // TODO : Implement GetSpecificEventEntriesCount
+        public int GetSpecificEventEntriesCount(EventLogEntryType value)
+        {
             EventLogEntryCollection systemEvents = (new EventLog("System", ".")).Entries;
-            throw new NotImplementedException();
+            return systemEvents.Cast<EventLogEntry>().Where(x => x.EntryType == value).Count();
         }
 
 
@@ -307,8 +389,12 @@ namespace EnumerableTask {
         ///    
         /// </example>
         public IEnumerable<string> GetIEnumerableTypesNames(Assembly assembly) {
-            // TODO : Implement GetIEnumerableTypesNames
-            throw new NotImplementedException();
+            if (assembly == null)
+            {
+                throw new ArgumentNullException();
+            }
+            var z = assembly.GetExportedTypes().Where(x => x.GetInterface("IEnumerable") != null).Select(x => x.Name).Distinct();
+            return z;
         }
 
         /// <summary>Calculates sales sum by quarter</summary>
@@ -322,9 +408,15 @@ namespace EnumerableTask {
         ///    {(1/1/2010, 10)  , (2/2/2010, 10), (3/3/2010, 10) } => { 30, 0, 0, 0 }
         ///    {(1/1/2010, 10)  , (4/4/2010, 10), (10/10/2010, 10) } => { 10, 10, 0, 10 }
         /// </example>
-        public int[] GetQuarterSales(IEnumerable<Tuple<DateTime, int>> sales) {
-            // TODO : Implement GetQuarterSales
-            throw new NotImplementedException();
+        public int[] GetQuarterSales(IEnumerable<Tuple<DateTime, int>> sales)
+        {
+            var arr = new int[] { 0, 0, 0, 0 };
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = sales.Where(s => (s.Item1.Month + 2) / 3 == i + 1).Sum(r => r.Item2);
+            }
+
+            return arr;
         }
 
 
@@ -338,9 +430,9 @@ namespace EnumerableTask {
         ///  {"c","b","a"} => {"a","b","c"}
         ///  {"c","cc","b","bb","a,"aa"} => {"a","b","c","aa","bb","cc"}
         /// </example>
-        public IEnumerable<string> SortStringsByLengthAndAlphabet(IEnumerable<string> data) {
-            // TODO : Implement SortStringsByLengthAndAlphabet
-            throw new NotImplementedException();
+        public IEnumerable<string> SortStringsByLengthAndAlphabet(IEnumerable<string> data)
+        {
+            return data.OrderBy(x => (x ?? String.Empty).Length).ThenBy(x => x);
         }
 
         /// <summary> Finds all missing digits </summary>
@@ -353,9 +445,10 @@ namespace EnumerableTask {
         ///   {"aaa","a1","b","c2","d","e3","f01234"} => {'5','6','7','8','9'}
         ///   {"a","b","c","9876543210"} => {}
         /// </example>
-        public IEnumerable<char> GetMissingDigits(IEnumerable<string> data) {
-            // TODO : Implement GetMissingDigits
-            throw new NotImplementedException();
+        public IEnumerable<char> GetMissingDigits(IEnumerable<string> data)
+        {
+            int[] a = new int[10];
+            return "0123456789".Except(data.DefaultIfEmpty(String.Empty).Aggregate((x, y) => x + y));
         }
 
 
@@ -371,9 +464,9 @@ namespace EnumerableTask {
         ///   {"nine","eight","nine","eight"} => {"eight","eight","nine","nine"}
         ///   {"one","one","one","zero"} => {"zero","one","one","one"}
         /// </example>
-        public IEnumerable<string> SortDigitNamesByNumericOrder(IEnumerable<string> data) {
-            // TODO : Implement SortDigitNamesByNumericOrder
-            throw new NotImplementedException();
+        public IEnumerable<string> SortDigitNamesByNumericOrder(IEnumerable<string> data)
+        {
+            return data.OrderBy(x => Array.IndexOf<string>(new string[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" }, x));
         }
 
         /// <summary> Combines numbers and fruits </summary>
@@ -389,9 +482,9 @@ namespace EnumerableTask {
         ///  {"one","two","three"}, { } => { }
         ///  { }, {"apple", "bananas" } => { }
         /// </example>
-        public IEnumerable<string> CombineNumbersAndFruits(IEnumerable<string> numbers, IEnumerable<string> fruits) {
-            // TODO : Implement CombinesNumbersAndFruits
-            throw new NotImplementedException();
+        public IEnumerable<string> CombineNumbersAndFruits(IEnumerable<string> numbers, IEnumerable<string> fruits)
+        {
+            return numbers.Zip(fruits, (x, y) => x + " " + y);
         }
 
 
@@ -406,9 +499,9 @@ namespace EnumerableTask {
         ///   {"a","aa","aaa"} => {"a"}
         ///   {"ab","ba","aabb","baba"} => {"a","b"}
         /// </example>
-        public IEnumerable<char> GetCommonChars(IEnumerable<string> data) {
-            // TODO : Implement GetCommonChars
-            throw new NotImplementedException();
+        public IEnumerable<char> GetCommonChars(IEnumerable<string> data)
+        {
+            return data.DefaultIfEmpty("").Aggregate<IEnumerable<char>>((x, y) => x.Intersect(y));
         }
 
         /// <summary> Calculates sum of all integers from object array </summary>
@@ -422,9 +515,9 @@ namespace EnumerableTask {
         ///    { 10, "ten", 10 } => 20 
         ///    { } => 0
         /// </example>
-        public int GetSumOfAllInts(object[] data) {
-            // TODO : Implement GetSumOfAllInts
-            throw new NotImplementedException();
+        public int GetSumOfAllInts(object[] data)
+        {
+            return data.OfType<int>().Sum(x => x);
         }
 
 
@@ -439,9 +532,9 @@ namespace EnumerableTask {
         ///   { 1,2,3, true, false } => { }
         ///   { } => { }
         /// </example>
-        public IEnumerable<string> GetStringsOnly(object[] data) {
-            // TODO : Implement GetStringsOnly
-            throw new NotImplementedException();
+        public IEnumerable<string> GetStringsOnly(object[] data)
+        {
+            return data.OfType<string>();
         }
 
         /// <summary> Calculates the total length of strings</summary>
@@ -457,9 +550,9 @@ namespace EnumerableTask {
         ///   { null } => 0
         ///   { } => 0
         /// </example>
-        public int GetTotalStringsLength(IEnumerable<string> data) {
-            // TODO : Implement GetTotalStringsLength
-            throw new NotImplementedException();
+        public int GetTotalStringsLength(IEnumerable<string> data)
+        {
+            return data.Sum(x => (x ?? string.Empty).Length);
         }
 
         /// <summary> Determines whether sequence has null elements</summary>
@@ -474,9 +567,9 @@ namespace EnumerableTask {
         ///   { null, null, null } => true
         ///   { } => false
         /// </example>
-        public bool IsSequenceHasNulls(IEnumerable<string> data) {
-            // TODO : Implement IsSequenceHasNulls
-            throw new NotImplementedException();
+        public bool IsSequenceHasNulls(IEnumerable<string> data)
+        {
+            return data.Contains(null);
         }
 
         /// <summary> Determines whether all strings in sequence are uppercase</summary>
@@ -490,9 +583,9 @@ namespace EnumerableTask {
         ///   { "" } => false
         ///   { } => false
         /// </example>
-        public bool IsAllStringsAreUppercase(IEnumerable<string> data) {
-            // TODO : Implement IsAllStringsAreUppercase
-            throw new NotImplementedException();
+        public bool IsAllStringsAreUppercase(IEnumerable<string> data)
+        {
+            return data.DefaultIfEmpty(string.Empty).All(x => (x != string.Empty) && x.Equals(x.ToUpper()));
         }
 
         /// <summary> Finds first subsequence of negative integers </summary>
@@ -508,9 +601,9 @@ namespace EnumerableTask {
         ///    { 1, 2, 3 } => { }
         ///    { } => { }
         /// </example>
-        public IEnumerable<int> GetFirstNegativeSubsequence(IEnumerable<int> data) {
-            // TODO : Implement GetFirstNegativeSubsequence
-            throw new NotImplementedException();
+        public IEnumerable<int> GetFirstNegativeSubsequence(IEnumerable<int> data)
+        {
+            return data.SkipWhile(x => x >= 0).TakeWhile(y => y < 0);
         }
 
 
@@ -528,9 +621,9 @@ namespace EnumerableTask {
         /// { 3,2,1 } , { 1.0, 2.0, 3.0 } => false
         /// { -10 } => { -10.0 } => true
         /// </example>
-        public bool AreNumericListsEqual(IEnumerable<int> integers, IEnumerable<double> doubles) {
-            // TODO : Implement AreNumericListsEqual
-            throw new NotImplementedException();
+        public bool AreNumericListsEqual(IEnumerable<int> integers, IEnumerable<double> doubles)
+        {
+            return integers.SequenceEqual(doubles.Select(x => (int)x));
         }
 
         /// <summary>
@@ -547,9 +640,9 @@ namespace EnumerableTask {
         ///    { "1.1", "1.2", "1.5", "2.0" }, "1.4" => null
         ///    { "1.1", "1.2", "1.5", "2.0" }, "2.0" => null
         /// </example>
-        public string GetNextVersionFromList(IEnumerable<string> versions, string currentVersion) {
-            // TODO : Implement GetNextVersionFromList
-            throw new NotImplementedException();
+        public string GetNextVersionFromList(IEnumerable<string> versions, string currentVersion)
+        {
+            return versions.DefaultIfEmpty(null).SkipWhile(x => x != currentVersion).ElementAtOrDefault(1);
         }
 
         /// <summary>
@@ -565,9 +658,9 @@ namespace EnumerableTask {
         ///   { 1, 2, 3 } + { 10, 20, 30 } => { 11, 22, 33 }
         ///   { 1, 1, 1 } + { -1, -1, -1 } => { 0, 0, 0 }
         /// </example>
-        public IEnumerable<int> GetSumOfVectors(IEnumerable<int> vector1, IEnumerable<int> vector2) {
-            // TODO : Implement GetSumOfVectors
-            throw new NotImplementedException();
+        public IEnumerable<int> GetSumOfVectors(IEnumerable<int> vector1, IEnumerable<int> vector2)
+        {
+            return vector1.Zip(vector2, (x, y) => x + y);
         }
 
         /// <summary>
@@ -584,9 +677,9 @@ namespace EnumerableTask {
         ///   { 1, 1, 1 } * { -1, -1, -1 } => 1*-1 + 1*-1 + 1*-1 = -3
         ///   { 1, 1, 1 } * { 0, 0, 0 } => 1*0 + 1*0 +1*0 = 0
         /// </example>
-        public int GetProductOfVectors(IEnumerable<int> vector1, IEnumerable<int> vector2) {
-            // TODO : Implement GetProductOfVectors
-            throw new NotImplementedException();
+        public int GetProductOfVectors(IEnumerable<int> vector1, IEnumerable<int> vector2)
+        {
+            return vector1.Zip(vector2, (x, y) => x * y).Sum();
         }
 
 
@@ -604,9 +697,9 @@ namespace EnumerableTask {
         ///  {"John"}, { } => { }
         ///  { }, {"Alice"} => { }
         /// </example>
-        public IEnumerable<string> GetAllPairs(IEnumerable<string> boys, IEnumerable<string> girls) {
-            // TODO : Implement GetAllPairs
-            throw new NotImplementedException();
+        public IEnumerable<string> GetAllPairs(IEnumerable<string> boys, IEnumerable<string> girls)
+        {
+            return boys.SelectMany(x => girls.Select(y => x + "+" + y));
         }
 
 
@@ -623,12 +716,9 @@ namespace EnumerableTask {
         ///  { null, 1.0, true } => 1.0
         ///  { } => 0.0
         /// </example>
-        public double GetAverageOfDoubleValues(IEnumerable<object> data) {
-            // TODO : Implement GetAverageOfDoubleValues
-            throw new NotImplementedException();
+        public double GetAverageOfDoubleValues(IEnumerable<object> data)
+        {            
+            return data.OfType<double>().DefaultIfEmpty().Average();
         }
-
-    }
-
-    
+    }    
 }
