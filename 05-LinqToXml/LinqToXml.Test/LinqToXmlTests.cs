@@ -61,7 +61,7 @@ namespace LinqToXml.Test
 
         [TestMethod]
         [TestCategory("LinqToXml.GetFlattenString")]
-        public void GetFlattenStringTest()
+        public void GetOrdersValueTest()                                                 //Change method name (GetFlattenStringTest --> GetOrdersValueTest)
         {
             Assert.AreEqual(1510, LinqToXml.GetOrdersValue(LinqToXmlResources.GeneralOrdersFileSource));
         }
