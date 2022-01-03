@@ -26,15 +26,17 @@ namespace IOStreams
 		/// <returns>sequence of PlanetInfo</returns>
 		public static IEnumerable<PlanetInfo> ReadPlanetInfoFromXlsx(string xlsxFileName)
 		{
-			// TODO : Implement ReadPlanetInfoFromXlsx method using System.IO.Packaging + Linq-2-Xml
+			var mainPackage = Package.Open(xlsxFileName, FileMode.OpenOrCreate);
 
-			// HINT : Please be as simple & clear as possible.
-			//        No complex and common use cases, just this specified file.
-			//        Required data are stored in Planets.xlsx archive in 2 files:
-			//         /xl/sharedStrings.xml      - dictionary of all string values
-			//         /xl/worksheets/sheet1.xml  - main worksheet
+			XElement xPlanets = XElement.Load(mainPackage.GetPart(new Uri("/xl/sharedStrings.xml", UriKind.Relative)).GetStream());
+			XElement xRadius = XElement.Load(mainPackage.GetPart(new Uri("/xl/worksheets/sheet1.xml", UriKind.Relative)).GetStream());
 
-			throw new NotImplementedException();
+			mainPackage.Close();
+
+			var namePlanets = xPlanets.Elements().Elements().Select(x => x.Value).Take(8);
+			var radiusResult = xRadius.Elements().Elements().Elements().Elements().Where(x => x.Value.ToString().Length > 3).Select(x => double.Parse(x.Value));		
+
+			return namePlanets.Zip(radiusResult, (n, r) => new PlanetInfo() { Name = n, MeanRadius = r });
 		}
 
 
@@ -46,8 +48,23 @@ namespace IOStreams
 		/// <returns></returns>
 		public static string CalculateHash(this Stream stream, string hashAlgorithmName)
 		{
-			// TODO : Implement CalculateHash method
-			throw new NotImplementedException();
+            if (stream.Length == 0 || hashAlgorithmName == "unrecognized")
+            {
+                throw new ArgumentException();
+            }
+
+			using (var hashAlgoritm = HashAlgorithm.Create(hashAlgorithmName))
+			{
+				var b = hashAlgoritm.ComputeHash(stream);
+				var sBuilder = new StringBuilder();
+				stream.Position = 0;
+				for (int i = 0; i < b.Length; i++)
+				{
+					sBuilder.Append(b[i].ToString("X2"));
+				}
+
+				return sBuilder.ToString();
+			}
 		}
 
 
@@ -58,9 +75,43 @@ namespace IOStreams
 		/// <param name="method">method used for compression (none, deflate, gzip)</param>
 		/// <returns>output stream</returns>
 		public static Stream DecompressStream(string fileName, DecompressionMethods method)
-		{
-			// TODO : Implement DecompressStream method
-			throw new NotImplementedException();
+		{	
+
+			using (FileStream originalStream = new FileStream(fileName, FileMode.Open))
+            {
+				int indexOfPoint = fileName.IndexOf('.');
+				string newFileName = fileName.Substring(0, indexOfPoint) + method.ToString() + ".xlsx";
+				if (method == DecompressionMethods.None)
+                {
+					int length = (int)originalStream.Length;
+					var bytes = new byte[length];
+					var x = originalStream.Read(bytes, 0, length);
+					return new MemoryStream(bytes);
+                }
+				using (FileStream decompressedFileStream = File.Create(newFileName))
+				{
+					if (method == DecompressionMethods.Deflate)
+                    {
+						using (DeflateStream decompressionStream = new DeflateStream(originalStream, CompressionMode.Decompress))
+						{
+							decompressionStream.CopyTo(decompressedFileStream);							
+						}
+					}
+                    else
+                    {
+						using (GZipStream decompressionStream = new GZipStream(originalStream, CompressionMode.Decompress))
+						{
+							decompressionStream.CopyTo(decompressedFileStream);							
+						}
+					}
+
+					decompressedFileStream.Position = 0;
+					int length = (int)decompressedFileStream.Length;
+					var bytes = new byte[length];
+					var x = decompressedFileStream.Read(bytes, 0, length);
+					return new MemoryStream(bytes);
+				}
+			}
 		}
 
 
@@ -72,8 +123,10 @@ namespace IOStreams
 		/// <returns>Unicoded file content</returns>
 		public static string ReadEncodedText(string fileName, string encoding)
 		{
-			// TODO : Implement ReadEncodedText method
-			throw new NotImplementedException();
+			using(StreamReader streamReader = new StreamReader(fileName, Encoding.GetEncoding(encoding)))
+            {
+				return streamReader.ReadToEnd();
+            }
 		}
 	}
 
